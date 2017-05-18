@@ -314,10 +314,3 @@ function os_events_update_7025() {
 function os_events_update_7026() {
   features_revert(array('os_events' => array('field_instance')));
 }
-
-/**
- * Enable Google OAuth and Calendar modules for exporting to Google
- */
-function os_events_update_7027() {
-  module_enable(array('gauth', 'gcal'));
-}
