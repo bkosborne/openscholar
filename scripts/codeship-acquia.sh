@@ -108,6 +108,7 @@ git commit -a -m "Make File Update."
 else
 #Copy unmakable modules, when we don’t build
 cp -R openscholar/temporary/* openscholar/openscholar/modules/contrib/
+git commit -a -m "Update Temporary Modules." || echo 'Nothing to commit.'
 fi
 git push origin $CI_BRANCH
 echo -e "\033[1;36mFINISHED BUILDING $CI_BRANCH ON HWPI1\e[0m"
@@ -192,7 +193,6 @@ mv $BUILD_ROOT/www-build $BUILD_ROOT/$DOCROOT
 git add --all $BUILD_ROOT/$DOCROOT
 #Copy unmakable modules
 cp -R openscholar/temporary/* openscholar/openscholar/modules/contrib/
-git commit -a -m "Update Temporary Modules." || echo 'Nothing to commit.'
 # iCalcreator cannot be downloaded via make because a temporary token is needed,
 # so we have the library inside os_events directory and we copy it to libraries.
 cp -R openscholar/openscholar/modules/os_features/os_events/iCalcreator openscholar/openscholar/libraries/
