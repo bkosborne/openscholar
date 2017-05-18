@@ -103,7 +103,6 @@ function getClient() {
 
   $vsite = vsite_get_vsite();
   $redirectUri = $_SERVER['REQUEST_SCHEME'] . "://" . $_SERVER['HTTP_HOST'] . '/' . $vsite->group->purl . '/calendar';
-//  $client->setState('1');
   $client->setRedirectUri($redirectUri);
 
   // Load previously authorized credentials from a file.
@@ -158,15 +157,13 @@ function os_events_gcal_create_calendar() {
 
   require '../openscholar/libraries/google-api-php-client/vendor/autoload.php';
 
-  $redirectUri = '/calendar';
-
   // Get the API client and construct the service object.
   $client = getClient();
-  $client->setRedirectUri($redirectUri);
+  $client->setRedirectUri('/calendar');
 
   $calendarService = new Google_Service_Calendar($client);
 
-# Create a test calendar
+  # Create a new calendar to import events into
   $vsite = vsite_get_vsite();
   $calendar_calendar = new Google_Service_Calendar_Calendar();
   $calendar_calendar->setDescription(isset($vsite->group->field_site_description[LANGUAGE_NONE][0]['safe_value']) ? $vsite->group->field_site_description[LANGUAGE_NONE][0]['safe_value'] : "");
@@ -416,14 +413,6 @@ function os_events_menu() {
     'access arguments' => array('administer site configuration'),
     'type' => MENU_CALLBACK,
   );
-  $items['calendar/gauth-account-authenticate'] = array(
-    'title' => 'Google Authenticate',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('os_events_gauth_account_authenticate'),
-    'access arguments' => array('administer site configuration'),
-    'type' => MENU_CALLBACK,
-  );
-
   $items['calendar/gcal-create-calendar'] = array(
     'title' => 'Create Calendar on Google',
     'page callback' => 'drupal_get_form',
@@ -431,12 +420,6 @@ function os_events_menu() {
     'access arguments' => array('administer site configuration'),
     'type' => MENU_CALLBACK,
   );
-  $items['gauth/response_handler'] = array(
-    'page callback' => 'os_events_gauth_response_handler',
-    'access callback' => TRUE,
-    'type' => MENU_CALLBACK,
-  );
-
   $items['calendar/get-access-token-with-auth-code'] = array(
     'title' => 'Get Access Token With Auth Code',
     'page callback' => 'drupal_get_form',
