@@ -122,16 +122,14 @@ function getClient() {
 
 function os_events_get_access_token_with_auth_code() {
 
+  require '../openscholar/libraries/google-api-php-client/vendor/autoload.php';
+
   if (!isset($_GET['code'])) {
     error_log("Did not receive a Google auth code in the query string with which to create an access code.");
     return;
   } else {
     $authCode = $_GET['code'];
   }
-
-  // require '../openscholar/libraries/google-api-php-client/vendor/autoload.php';
-  // refresh Google PHP API library
-  require '../vendor/autoload.php';
 
   $client = getClient();
 
@@ -158,8 +156,7 @@ function os_events_get_access_token_with_auth_code() {
 
 function os_events_gcal_create_calendar() {
 
-  // require '../openscholar/libraries/google-api-php-client/vendor/autoload.php';
-  require '../vendor/autoload.php';
+  require '../openscholar/libraries/google-api-php-client/vendor/autoload.php';
 
   $redirectUri = '/calendar';
 
@@ -1264,7 +1261,7 @@ function os_events_views_pre_view(&$view, &$display_id, &$args) {
     $google_credentials = variable_get('google_credentials', false);
     if ($google_credentials && $google_client_secret) {
 
-      require '../vendor/autoload.php';
+      require '../openscholar/libraries/google-api-php-client/vendor/autoload.php';
       $client = getClient();
       $vsite = vsite_get_vsite();
       $redirectUri = $_SERVER['REQUEST_SCHEME'] . "://" . $_SERVER['HTTP_HOST'] . '/' . $vsite->group->purl . '/calendar/get-access-token-with-auth-code';
