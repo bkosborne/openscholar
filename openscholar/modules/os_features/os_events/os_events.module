@@ -87,6 +87,7 @@ function getClient() {
   define('APPLICATION_NAME', "OpenScholar Calendar Exporter");
   define('CLIENT_SECRET_PATH', tempnam(sys_get_temp_dir(), "google_client_secret"));
   define('CREDENTIALS_PATH', tempnam(sys_get_temp_dir(), "google_credentials"));
+  define('SCOPES', implode(' ', array(Google_Service_Calendar::CALENDAR)));
 
   $google_client_secret = variable_get('google_client_secret');
   $google_credentials = variable_get('google_credentials');
@@ -98,84 +99,106 @@ function getClient() {
   $client->setScopes(SCOPES);
   $client->setAuthConfig(CLIENT_SECRET_PATH);
   $client->setAccessType('offline');
-  $redirectUri = 'https://oauth-redirect.googleusercontent.com/r/core-stronghold-491';
+  $vsite = vsite_get_vsite();
+  $redirectUri = $_SERVER['REQUEST_SCHEME'] . "://" . $_SERVER['HTTP_HOST'] . '/' . $vsite->group->purl . '/calendar';
   $client->setState('1');
   $client->setRedirectUri($redirectUri);
 
   // Load previously authorized credentials from a file.
-  $credentialsPath = expandHomeDirectory(CREDENTIALS_PATH);
+  $credentialsPath = CREDENTIALS_PATH;
+
+  // If the credentials exist, and are valid
   if (file_exists($credentialsPath)) {
     $accessToken = json_decode(file_get_contents($credentialsPath), true);
-  } else {
+  }
+
+  $client->setAccessToken($accessToken);
+
+  // If the token is expired or revoked, get a new one using an auth code.
+  if ($client->isAccessTokenExpired()) {
+    $client->setRedirectUri($_SERVER['REQUEST_SCHEME'] . "://" . $_SERVER['HTTP_HOST'] . '/' . $vsite->group->purl . '/calendar/get-access-token-with-auth-code');
+
     // Request authorization from the user.
     $authUrl = $client->createAuthUrl(SCOPES);
     // printf("Open the following link in your browser:\n%s\n", $authUrl);
+
+    // Why isn't this taking us to the auth page?
     drupal_goto($authUrl);
-    print 'Enter verification code: ';
-    $authCode = trim(fgets(STDIN));
-
-    // Exchange authorization code for an access token.
-    $accessToken = $client->fetchAccessTokenWithAuthCode($authCode);
-
-    // Store the credentials to disk.
-    if(!file_exists(dirname($credentialsPath))) {
-      mkdir(dirname($credentialsPath), 0700, true);
-    }
-    file_put_contents($credentialsPath, json_encode($accessToken));
-    printf("Credentials saved to %s\n", $credentialsPath);
   }
+
   $client->setAccessToken($accessToken);
 
-  // Refresh the token if it's expired.
   if ($client->isAccessTokenExpired()) {
 
     // Why is getRefreshToken() returning null?
     // $client->fetchAccessTokenWithRefreshToken($client->getRefreshToken());
-    $client->fetchAccessTokenWithRefreshToken($accessToken['refresh_token']);
+    $creds = $client->fetchAccessTokenWithRefreshToken($accessToken['refresh_token']);
 
-    file_put_contents($credentialsPath, json_encode($client->getAccessToken()));
+    if ($creds['error'] == 'invalid_grant') {
+      error_log("fetchAccessTokenWithRefreshToken returned 'invalid_grant'");
+      return;
+    }
   }
   return $client;
 }
 
+function os_events_get_access_token_with_auth_code() {
+
+  if (!isset($_GET['code'])) {
+    error_log("Did not receive a Google auth code in the query string with which to create an access code.");
+    return;
+  } else {
+    $authCode = $_GET['code'];
+    drupal_exit('/calendar');
+  }
+
+  // require '../openscholar/libraries/google-api-php-client/vendor/autoload.php';
+  // refresh Google PHP API library
+  require '../vendor/autoload.php';
+
+  define('APPLICATION_NAME', "OpenScholar Calendar Exporter");
+  define('CLIENT_SECRET_PATH', tempnam(sys_get_temp_dir(), "google_client_secret"));
+  define('CREDENTIALS_PATH', tempnam(sys_get_temp_dir(), "google_credentials"));
+  define('SCOPES', implode(' ', array(Google_Service_Calendar::CALENDAR )));
+
+  $google_client_secret = variable_get('google_client_secret');
+  $google_credentials = variable_get('google_credentials');
+  file_put_contents(CLIENT_SECRET_PATH, $google_client_secret);
+  file_put_contents(CREDENTIALS_PATH, $google_credentials);
+
+  // Incessant redirect_uri_mismatch.  Try tweaking some parameters in the client.
+  $client = new Google_Client();
+  $client->setApplicationName(APPLICATION_NAME);
+  $client->setScopes(SCOPES);
+  $client->setAuthConfig(CLIENT_SECRET_PATH);
+  $client->setAccessType('offline');
+
+  // This redirect URI has to be the same as the one we used for requesting the auth code (in fetchAccessTokenWithRefreshToken)
+  $vsite = vsite_get_vsite();
+  $redirectUri = $_SERVER['REQUEST_SCHEME'] . "://" . $_SERVER['HTTP_HOST'] . '/' . $vsite->group->purl . '/calendar/get-access-token-with-auth-code';
+
+  $client->setState('1');
+  $client->setRedirectUri($redirectUri);
+
+  // Exchange authorization code for an access token.
+  $accessToken = $client->fetchAccessTokenWithAuthCode($authCode);
+
+  if (! isset($accessToken['error'])) {
+    variable_set('google_credentials', json_encode($accessToken));
+  }
+  error_log("Credentials saved to database.");
+}
+
 function os_events_gcal_create_calendar() {
 
-  require '../openscholar/libraries/google-api-php-client/vendor/autoload.php';
+  // require '../openscholar/libraries/google-api-php-client/vendor/autoload.php';
+  require '../vendor/autoload.php';
 
-  // If modifying these scopes, delete your previously saved credentials
-  // at ~/.credentials/calendar-php-quickstart.json
-  define('SCOPES', implode(' ', array(
-      Google_Service_Calendar::CALENDAR )
-  ));
-
-  # $redirectUri = 'http://localhost:8080/alldone.php';
-  $redirectUri = 'https://oauth-redirect.googleusercontent.com/r/core-stronghold-491';
-
-  /**
-   * Expands the home directory alias '~' to the full path.
-   * @param string $path the path to expand.
-   * @return string the expanded path.
-   */
-  function expandHomeDirectory($path) {
-    $homeDirectory = getenv('HOME');
-    if (empty($homeDirectory)) {
-      $homeDirectory = getenv('HOMEDRIVE') . getenv('HOMEPATH');
-    }
-    return str_replace('~', realpath($homeDirectory), $path);
-  }
+  $redirectUri = '/calendar';
 
   // Get the API client and construct the service object.
   $client = getClient();
   $client->setRedirectUri($redirectUri);
-
-// Print the next 10 events on the user's calendar.
-//  $calendarId = 'primary';
-//  $optParams = array(
-//    'maxResults' => 10,
-//    'orderBy' => 'startTime',
-//    'singleEvents' => TRUE,
-//    'timeMin' => date('c'),
-//  );
 
   $calendarService = new Google_Service_Calendar($client);
 
@@ -187,15 +210,6 @@ function os_events_gcal_create_calendar() {
   $calendar_calendar->setLocation(isset($vsite->group->field_site_address[LANGUAGE_NONE][0]['value']) ? $vsite->group->field_site_address[LANGUAGE_NONE][0]['value'] : "");
   $calendar = $calendarService->calendars->insert($calendar_calendar);
 
-  // End of demo code
-
-  # Collect calendar info
-  $vsite = vsite_get_vsite();
-//  $calendar_summary     = ;
-//  $calendar_description =
-//  $calendar_location    = ;
-//  $calendar_timezone    = isset($vsite->controllers->variable->values['original']['date_default_timezone']) ? $vsite->controllers->variable->values['original']['date_default_timezone'] : "America/New_York";
-
   $name = "os_events";
   $display_id = "feed_2";
   $args = array();
@@ -205,19 +219,7 @@ function os_events_gcal_create_calendar() {
     $view->execute_display($display_id, $args);
   }
 
-//  $account_name = variable_get('gauth_account_name', '');
-//  $cal = gcal_calendar_create($params, $account_name);
-
   foreach ($view->result as $e) {
-    $event = array();
-    //    $event['Description'] = ;
-    //    $event['Start']       = $e->_field_data['nid']['entity']->field_date[LANGUAGE_NONE][0]['value'];
-    //    $event['End']         = $e->_field_data['nid']['entity']->field_date[LANGUAGE_NONE][0]['value2'];
-    //    $event['Location']    = $e->_field_data['nid']['entity']->field_event_location[LANGUAGE_NONE][0]['value'];
-    //    $event['Summary']     = $e->_field_data['nid']['entity']->title;
-    //    $event['Timezone']    = $e->_field_data['nid']['entity']->field_date[LANGUAGE_NONE][0]['timezone'];
-
-    //    $return = gcal_event_create($event, $cal->id, $account_name, $by_name);
 
     # Create test event and add it to the calendar
     $event = new Google_Service_Calendar_Event();
@@ -234,11 +236,6 @@ function os_events_gcal_create_calendar() {
     $calendarDateTime->setDateTime($dt2->format(DateTime::RFC3339));
     $event->setEnd($calendarDateTime);
     $calendarService->events->insert($calendar->getId(), $event);
-
-
-//    if (!$return) {
-//      drupal_set_message("Couldn't add event to new Google Calendar: " . $event['Description'], 'Error');
-//    }
   }
 
   drupal_set_message("Calendar export completed", 'Success');
@@ -473,6 +470,14 @@ function os_events_menu() {
   $items['gauth/response_handler'] = array(
     'page callback' => 'os_events_gauth_response_handler',
     'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['calendar/get-access-token-with-auth-code'] = array(
+    'title' => 'Get Access Token With Auth Code',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('os_events_get_access_token_with_auth_code'),
+    'access arguments' => array('administer site configuration'),
     'type' => MENU_CALLBACK,
   );
 
