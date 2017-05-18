@@ -1236,7 +1236,7 @@ function os_events_views_pre_view(&$view, &$display_id, &$args) {
     $buttons = array(
       'subscribe' => 'calendar/upcoming/all/export.ics',
       'iCal' => 'calendar/upcoming/all/export.ics',
-      'rss' => 'calendar/upcoming/all/rss.xml',
+      'rss' => 'calendar/upcoming/all/rss.xml'
     );
 
     # Show the Google export button, if we have a Google API account
@@ -1267,6 +1267,7 @@ function os_events_views_pre_view(&$view, &$display_id, &$args) {
 
       $links[$label] = array(
         'title' => t($label),
+        'attributes' => array('class' => array(strtolower($label))),
         'href' => $path
       );
     }

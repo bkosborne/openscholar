@@ -128,10 +128,3 @@ function hwpi_update_7008() {
     }
   }
 }
-
-/**
- * Assign this variable to the Google OAuth account name
- */
-function hwpi_update_7009() {
-  variable_set('gauth_account_name', 'OpenScholarGAuth');
-}
