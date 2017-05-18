@@ -98,10 +98,12 @@ function getClient() {
   $client->setApplicationName(APPLICATION_NAME);
   $client->setScopes(SCOPES);
   $client->setAuthConfig(CLIENT_SECRET_PATH);
-  $client->setAccessType('offline');
+  $client->setAccessType('online');
+  $client->setApprovalPrompt('force');
+
   $vsite = vsite_get_vsite();
   $redirectUri = $_SERVER['REQUEST_SCHEME'] . "://" . $_SERVER['HTTP_HOST'] . '/' . $vsite->group->purl . '/calendar';
-  $client->setState('1');
+//  $client->setState('1');
   $client->setRedirectUri($redirectUri);
 
   // Load previously authorized credentials from a file.
@@ -113,32 +115,8 @@ function getClient() {
   }
 
   $client->setAccessToken($accessToken);
+  $client->setRedirectUri($_SERVER['REQUEST_SCHEME'] . "://" . $_SERVER['HTTP_HOST'] . '/' . $vsite->group->purl . '/calendar/get-access-token-with-auth-code');
 
-  // If the token is expired or revoked, get a new one using an auth code.
-  if ($client->isAccessTokenExpired()) {
-    $client->setRedirectUri($_SERVER['REQUEST_SCHEME'] . "://" . $_SERVER['HTTP_HOST'] . '/' . $vsite->group->purl . '/calendar/get-access-token-with-auth-code');
-
-    // Request authorization from the user.
-    $authUrl = $client->createAuthUrl(SCOPES);
-    // printf("Open the following link in your browser:\n%s\n", $authUrl);
-
-    // Why isn't this taking us to the auth page?
-    drupal_goto($authUrl);
-  }
-
-  $client->setAccessToken($accessToken);
-
-  if ($client->isAccessTokenExpired()) {
-
-    // Why is getRefreshToken() returning null?
-    // $client->fetchAccessTokenWithRefreshToken($client->getRefreshToken());
-    $creds = $client->fetchAccessTokenWithRefreshToken($accessToken['refresh_token']);
-
-    if ($creds['error'] == 'invalid_grant') {
-      error_log("fetchAccessTokenWithRefreshToken returned 'invalid_grant'");
-      return;
-    }
-  }
   return $client;
 }
 
@@ -155,22 +133,7 @@ function os_events_get_access_token_with_auth_code() {
   // refresh Google PHP API library
   require '../vendor/autoload.php';
 
-  define('APPLICATION_NAME', "OpenScholar Calendar Exporter");
-  define('CLIENT_SECRET_PATH', tempnam(sys_get_temp_dir(), "google_client_secret"));
-  define('CREDENTIALS_PATH', tempnam(sys_get_temp_dir(), "google_credentials"));
-  define('SCOPES', implode(' ', array(Google_Service_Calendar::CALENDAR )));
-
-  $google_client_secret = variable_get('google_client_secret');
-  $google_credentials = variable_get('google_credentials');
-  file_put_contents(CLIENT_SECRET_PATH, $google_client_secret);
-  file_put_contents(CREDENTIALS_PATH, $google_credentials);
-
-  // Incessant redirect_uri_mismatch.  Try tweaking some parameters in the client.
-  $client = new Google_Client();
-  $client->setApplicationName(APPLICATION_NAME);
-  $client->setScopes(SCOPES);
-  $client->setAuthConfig(CLIENT_SECRET_PATH);
-  $client->setAccessType('offline');
+  $client = getClient();
 
   // This redirect URI has to be the same as the one we used for requesting the auth code (in fetchAccessTokenWithRefreshToken)
   $vsite = vsite_get_vsite();
@@ -182,10 +145,15 @@ function os_events_get_access_token_with_auth_code() {
   // Exchange authorization code for an access token.
   $accessToken = $client->fetchAccessTokenWithAuthCode($authCode);
 
-  if (! isset($accessToken['error'])) {
+  if (! isset($accessToken['error']) && isset($accessToken['access_token'])) {
+    $client->setAccessToken($accessToken['access_token']);
     variable_set('google_credentials', json_encode($accessToken));
+    error_log("Credentials saved to database.");
+  } else {
+    error_log("Error getting access token via auth code.");
   }
-  error_log("Credentials saved to database.");
+
+  os_events_gcal_create_calendar();
 }
 
 function os_events_gcal_create_calendar() {
@@ -1292,9 +1260,17 @@ function os_events_views_pre_view(&$view, &$display_id, &$args) {
     );
 
     # Show the Google export button, if we have a Google API account
-    $have_google_account = variable_get('gauth_account_name', false);
-    if ($have_google_account) {
-      $buttons['Google'] = 'calendar/gcal-create-calendar';
+    $google_client_secret = variable_get('google_client_secret', false);
+    $google_credentials = variable_get('google_credentials', false);
+    if ($google_credentials && $google_client_secret) {
+
+      require '../vendor/autoload.php';
+      $client = getClient();
+      $vsite = vsite_get_vsite();
+      $redirectUri = $_SERVER['REQUEST_SCHEME'] . "://" . $_SERVER['HTTP_HOST'] . '/' . $vsite->group->purl . '/calendar/get-access-token-with-auth-code';
+      $client->setRedirectUri($redirectUri);
+      $authUrl = $client->createAuthUrl($client->getScopes());
+      $buttons['Google'] = $authUrl;
     }
 
     foreach ($buttons as $label => $path) {
@@ -1312,13 +1288,11 @@ function os_events_views_pre_view(&$view, &$display_id, &$args) {
       $links[$label] = array(
         'title' => t($label),
         'href' => $path
-        # 'attributes' => array('class' => array(strtolower($label)), 'onClick' => "location.href='/evp/calendar/gcal-create-calendar'")
       );
     }
 
     // Make sure webcal link uses webcal protocol.
     $links['subscribe']['href'] = str_replace('http://', 'webcal://', url($links['subscribe']['href'], array('absolute' => TRUE)));
-//    $links['Google']['href'] = "location.href=\'/evp/calendar/gcal-create-calendar\'"; //EAM
 
     $view->attachment_before .= theme('links', array(
       'links' => $links,
