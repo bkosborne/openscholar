@@ -1267,8 +1267,8 @@ function os_events_views_pre_view(&$view, &$display_id, &$args) {
 
       $links[$label] = array(
         'title' => t($label),
-        'attributes' => array('class' => array(strtolower($label))),
-        'href' => $path
+        'href' => $path,
+        'attributes' => array('class' => array(strtolower($label)))
       );
     }
 
@@ -3289,6 +3289,5 @@ function os_events_cp_settings() {
       '#prefix' => '<label></label>',
     ),
   );
-
   return $settings;
 }

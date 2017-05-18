@@ -1,7 +1,5 @@
 # Quick codeship script to push builds to a pair of acquia repos as new branches are made.
 
-set -x
-
 # Get PR branch, default to empty string
 PR_BRANCH=$(git show -s --format=%B $CI_COMMIT_ID | grep -oP 'Merge pull request #[\d]* from openscholar/\K(.*)' || echo "")
 echo "'$PR_BRANCH' set as PR branch."
@@ -90,8 +88,6 @@ rm -Rf $BUILD_ROOT/$DOCROOT || true
 rm -Rf $BUILD_ROOT/www-build/install.php || true
 # Restore updated site.
 mv $BUILD_ROOT/www-build $BUILD_ROOT/$DOCROOT
-# Verification for Google API
-echo google-site-verification: googled19240dfd5fa8817.html > $BUILD_ROOT/$DOCROOT/googled19240dfd5fa8817.html
 # Add New Files to repo and commit changes
 git add --all $BUILD_ROOT/$DOCROOT
 #Copy unmakable modules
@@ -192,12 +188,11 @@ rm -Rf $BUILD_ROOT/$DOCROOT || true
 rm -Rf $BUILD_ROOT/www-build/install.php || true
 # Restore updated site.
 mv $BUILD_ROOT/www-build $BUILD_ROOT/$DOCROOT
-# Verification for Google API
-echo google-site-verification: googled19240dfd5fa8817.html > $BUILD_ROOT/$DOCROOT/googled19240dfd5fa8817.html
 # Add New Files to repo and commit changes
 git add --all $BUILD_ROOT/$DOCROOT
 #Copy unmakable modules
 cp -R openscholar/temporary/* openscholar/openscholar/modules/contrib/
+git commit -a -m "Update Temporary Modules." || echo 'Nothing to commit.'
 # iCalcreator cannot be downloaded via make because a temporary token is needed,
 # so we have the library inside os_events directory and we copy it to libraries.
 cp -R openscholar/openscholar/modules/os_features/os_events/iCalcreator openscholar/openscholar/libraries/
