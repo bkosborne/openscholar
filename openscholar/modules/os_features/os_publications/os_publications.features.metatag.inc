@@ -25,6 +25,6 @@ function os_publications_metatag_export_default() {
       ),
     ),
   );
-
+ 
   return $config;
 }
