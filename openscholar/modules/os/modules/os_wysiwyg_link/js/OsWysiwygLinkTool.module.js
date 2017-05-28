@@ -58,6 +58,8 @@
       extensions = extensions.concat(Drupal.settings.extensionMap[k]);
     }
 
+    $s.errors = [];
+
     $s.fh = FileHandlers.getInstance(
       extensions,
       Drupal.settings.maximumFileSize,
@@ -123,23 +125,31 @@
       };
 
       // todo: check for a good practice on throwing the errors.
+      var valid_form = true;
+      $s.errors = [];
       if (ret.text == "") {
-        return;
+        $s.errors.push(Drupal.t('The text field is empty.'));
+        valid_form = false;
       }
 
       if (ret.title == "") {
-        return;
+        $s.errors.push(Drupal.t('The title field is empty.'));
+        valid_form = false;
       }
 
       if (ret.type == 'email' && !valid.email(ret.arg)) {
-        return;
+        $s.errors.push(Drupal.t('The email field is invalid.'));
+        valid_form = false;
       }
 
       if (ret.type == 'url' && !valid.url(ret.arg)) {
-        return;
+        $s.errors.push(Drupal.t('The URL address is invalid'));
+        valid_form = false;
       }
 
-      close(ret);
+      if (valid_form) {
+        close(ret);
+      }
     }
   }]);
 
