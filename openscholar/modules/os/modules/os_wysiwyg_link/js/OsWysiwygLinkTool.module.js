@@ -34,7 +34,7 @@
               type: type,
               arg: urlArgument,
               title: titleText,
-              newWindow: newWindow,
+              newWindow: newWindow
             }
           }
         })
@@ -95,16 +95,48 @@
 
     $s.setLinkTarget = function (arg) {
       $s.arg = arg;
-    }
+    };
 
     $s.close = function (insert) {
-      ret = {
+
+      var valid = {
+        // Taken from https://stackoverflow.com/a/46181/847651.
+        'email': function validateEmail(email) {
+          var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+          return re.test(email);
+        },
+
+        'url': function ValidURL(str) {
+          // Taken from https://stackoverflow.com/a/5717133/847651.
+          var regex = /(http|https):\/\/(\w+:{0,1}\w*)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%!\-\/]))?/;
+          return regex.test(str);
+        }
+      };
+
+      var ret = {
         type: $s.active,
         arg: $s.arg,
         text: $s.text,
         title: $s.title,
         newWindow: $s.newWindow,
         insert: insert
+      };
+
+      // todo: check for a good practice on throwing the errors.
+      if (ret.text == "") {
+        return;
+      }
+
+      if (ret.title == "") {
+        return;
+      }
+
+      if (ret.type == 'email' && !valid.email(ret.arg)) {
+        return;
+      }
+
+      if (ret.type == 'url' && !valid.url(ret.arg)) {
+        return;
       }
 
       close(ret);
