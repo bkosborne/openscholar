@@ -8,20 +8,20 @@ PR_BRANCH=$(git show -s --format=%B $CI_COMMIT_ID | grep -oP 'Merge pull request
 echo "'$PR_BRANCH' set as PR branch."
 # pull down the acquia branch
 mkdir -p ~/src/acquia.com/
-git config --global user.email "openscholar@swap.lists.harvard.edu"
-git config --global user.name "OpenScholar Auto Push Bot"
+git config --verbose  --global user.email "openscholar@swap.lists.harvard.edu"
+git config --verbose  --global user.name "OpenScholar Auto Push Bot"
 if git ls-remote --heads hwpi1@svn-1745.prod.hosting.acquia.com:hwpi1.git | grep -sw $CI_BRANCH 2>&1>/dev/null; then
-git clone -b $CI_BRANCH hwpi1@svn-1745.prod.hosting.acquia.com:hwpi1.git  ~/src/acquia.com/hwpi1;
+git clone --verbose  -b $CI_BRANCH hwpi1@svn-1745.prod.hosting.acquia.com:hwpi1.git  ~/src/acquia.com/hwpi1;
 cd ~/src/acquia.com/hwpi1
 else
-git clone -b SCHOLAR-3.x hwpi1@svn-1745.prod.hosting.acquia.com:hwpi1.git  ~/src/acquia.com/hwpi1;
+git clone --verbose  -b SCHOLAR-3.x hwpi1@svn-1745.prod.hosting.acquia.com:hwpi1.git  ~/src/acquia.com/hwpi1;
 cd ~/src/acquia.com/hwpi1;
-git checkout -b $CI_BRANCH;
+git checkout --verbose  -b $CI_BRANCH;
 fi
 if ! test "$PR_BRANCH" = ""; then
 # do things
 # This branch is probably deleted, or will be soon, so we don't need to build
-git push origin :$PR_BRANCH || echo "$PR_BRANCH not found on hwpi1"
+git push --verbose  origin :$PR_BRANCH || echo "$PR_BRANCH not found on hwpi1"
 fi
 # Build this branch and push it to Acquia
 
@@ -44,7 +44,7 @@ preserve_files=( .htaccess robots_disallow.txt sites 404_fast.html favicon.ico )
 cp -f openscholar/openscholar/drupal-org-core.make /tmp/
 cp -f openscholar/openscholar/drupal-org.make /tmp/
 cp -f openscholar/openscholar/bower.json /tmp/
-git subtree pull -m "subtree merge in codeship" --prefix=openscholar git://github.com/openscholar/openscholar.git $CI_BRANCH
+git subtree --verbose  pull -m "subtree merge in codeship" --prefix=openscholar git://github.com/openscholar/openscholar.git $CI_BRANCH
 #Only build if no build has ever happened, or if the make files have changed
 if [ ! -d openscholar/openscholar/modules/contrib ] || [ $FORCE_REBUILD == "1" ] || [ "$(cmp -b 'openscholar/openscholar/drupal-org-core.make' '/tmp/drupal-org-core.make')" != "" ] || [ "$(cmp -b 'openscholar/openscholar/drupal-org.make' '/tmp/drupal-org.make')" != "" ] || [ "$(cmp -b 'openscholar/openscholar/bower.json' '/tmp/bower.json')" != "" ]; then
 # Chores.
@@ -92,7 +92,7 @@ rm -Rf $BUILD_ROOT/www-build/install.php || true
 # Restore updated site.
 mv $BUILD_ROOT/www-build $BUILD_ROOT/$DOCROOT
 # Add New Files to repo and commit changes
-git add --all $BUILD_ROOT/$DOCROOT
+git add --verbose  --all $BUILD_ROOT/$DOCROOT
 #Copy unmakable modules
 cp -R openscholar/temporary/* openscholar/openscholar/modules/contrib/
 # iCalcreator cannot be downloaded via make because a temporary token is needed,
@@ -103,17 +103,17 @@ cp -R openscholar/openscholar/modules/os_features/os_events/iCalcreator openscho
 for DIR in openscholar/openscholar/libraries openscholar/openscholar/themes/contrib openscholar/openscholar/modules/contrib
 do
 if [ -d "$DIR" ]; then
-git add --all -f $DIR
+git add --verbose  --all -f $DIR
 fi
 done
-git commit -a -m "Make File Update."
+git commit --verbose  -a -m "Make File Update."
 #END BUILD PROCESS
 else
 #Copy unmakable modules, when we don’t build
 cp -R openscholar/temporary/* openscholar/openscholar/modules/contrib/
-git commit -a -m "Update Temporary Modules." || echo 'Nothing to commit.'
+git commit --verbose  -a -m "Update Temporary Modules." || echo 'Nothing to commit.'
 fi
-git push origin $CI_BRANCH
+git push --verbose  origin $CI_BRANCH
 echo -e "\033[1;36mFINISHED BUILDING $CI_BRANCH ON HWPI1\e[0m"
 # space so I can see where one ends and another begins
 
@@ -127,17 +127,17 @@ echo -e "\033[1;36mFINISHED BUILDING $CI_BRANCH ON HWPI1\e[0m"
 # pull down the acquia branch
 mkdir -p /home/rof/src/acquia.com/
 if git ls-remote --heads hwpi2@svn-1745.prod.hosting.acquia.com:hwpi2.git | grep -sw $CI_BRANCH 2>&1>/dev/null; then
-git clone -b $CI_BRANCH hwpi2@svn-1745.prod.hosting.acquia.com:hwpi2.git  /home/rof/src/acquia.com/hwpi2;
+git clone --verbose  -b $CI_BRANCH hwpi2@svn-1745.prod.hosting.acquia.com:hwpi2.git  /home/rof/src/acquia.com/hwpi2;
 cd /home/rof/src/acquia.com/hwpi2
 else
-git clone -b SCHOLAR-3.x hwpi2@svn-1745.prod.hosting.acquia.com:hwpi2.git  /home/rof/src/acquia.com/hwpi2;
+git clone --verbose  -b SCHOLAR-3.x hwpi2@svn-1745.prod.hosting.acquia.com:hwpi2.git  /home/rof/src/acquia.com/hwpi2;
 cd /home/rof/src/acquia.com/hwpi2;
-git checkout -b $CI_BRANCH;
+git checkout --verbose  -b $CI_BRANCH;
 fi
 if ! test "$PR_BRANCH" = ""; then
 # do things
 # This branch is probably deleted, or will be soon, so we don't need to build
-git push origin :$PR_BRANCH || echo "$PR_BRANCH not found on hwpi2"
+git push --verbose  origin :$PR_BRANCH || echo "$PR_BRANCH not found on hwpi2"
 fi
 # Build this branch and push it to Acquia
 BUILD_ROOT='/home/rof/src/acquia.com/hwpi2'
@@ -148,7 +148,7 @@ preserve_files=( .htaccess robots_disallow.txt sites 404_fast.html favicon.ico )
 cp -f openscholar/openscholar/drupal-org-core.make /tmp/
 cp -f openscholar/openscholar/drupal-org.make /tmp/
 cp -f openscholar/openscholar/bower.json /tmp/
-git subtree pull -m "subtree merge in codeship" --prefix=openscholar git://github.com/openscholar/openscholar.git $CI_BRANCH
+git subtree --verbose  pull -m "subtree merge in codeship" --prefix=openscholar git://github.com/openscholar/openscholar.git $CI_BRANCH
 #Only build if no build has ever happened, or if the make files have changed
 if [ ! -d openscholar/openscholar/modules/contrib ] || [ $FORCE_REBUILD == "1" ] || [ "$(cmp -b 'openscholar/openscholar/drupal-org-core.make' '/tmp/drupal-org-core.make')" != "" ] || [ "$(cmp -b 'openscholar/openscholar/drupal-org.make' '/tmp/drupal-org.make')" != "" ] || [ "$(cmp -b 'openscholar/openscholar/bower.json' '/tmp/bower.json')" != "" ]; then
 # Chores.
@@ -193,7 +193,7 @@ rm -Rf $BUILD_ROOT/www-build/install.php || true
 # Restore updated site.
 mv $BUILD_ROOT/www-build $BUILD_ROOT/$DOCROOT
 # Add New Files to repo and commit changes
-git add --all $BUILD_ROOT/$DOCROOT
+git add --verbose  --all $BUILD_ROOT/$DOCROOT
 #Copy unmakable modules
 cp -R openscholar/temporary/* openscholar/openscholar/modules/contrib/
 # iCalcreator cannot be downloaded via make because a temporary token is needed,
@@ -211,12 +211,12 @@ for DIR in openscholar/openscholar/libraries openscholar/openscholar/themes/cont
 		git add --all -f $DIR
 	fi
 done
-git commit -a -m "Make File Update."
+git commit --verbose  -a -m "Make File Update."
 #END BUILD PROCESS
 else
 #Copy unmakable modules, when we don’t build
 	cp -R openscholar/temporary/* openscholar/openscholar/modules/contrib/
 	git commit -a -m "Update Temporary Modules."  || echo 'Nothing to commit.'
 fi
-git push origin $CI_BRANCH
+git push --verbose  origin $CI_BRANCH
 echo "FINISHED BUILDING $CI_BRANCH ON HWPI2"
