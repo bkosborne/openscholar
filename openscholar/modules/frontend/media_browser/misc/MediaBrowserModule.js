@@ -184,6 +184,7 @@
       params.max_filesize_raw || Drupal.settings.maximumFileSizeRaw,
       function ($files, messages) {
         for (var i = 0; i < $files.length; i++) {
+          $files[i].new = true;
           db.register($files[i]);
         }
         uploadBatch = uploadBatch.concat($files);

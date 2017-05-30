@@ -90,9 +90,10 @@
             for (var i = 0; i < rows.length; i++) {
               var entityType = rows[i].entityType;
               if (Object.keys(rows[i].params).length == emptyParamCount) {
+                var temp = args[entityType].configs || [];
                 args[entityType] = ['noop', entityType, rows[i].data, rows[i].lastUpdated];
                 if (args[entityType]) {
-                  args[entityType].configs = args[entityType].configs || [];
+                  args[entityType].configs = temp;
                 }
               }
               else {
@@ -431,10 +432,12 @@
             original = entities[originalKey];
 
           config.headers = config.headers || {};
-          config.headers['If-Unmodified-Since'] = (new Date(original.changed * 1000)).toString().replace(/ \([^)]*\)/, '');
+          if (original) {
+            config.headers['If-Unmodified-Since'] = (new Date(original.changed * 1000)).toString().replace(/ \([^)]*\)/, '');
+          }
 
           var defer = $q.defer();
-          $http.delete(url + '/' + entity.id, config).then(function (resp) {
+          $http.delete(baseUrl + '/' + entity.id, config).then(function (resp) {
             self.entities.splice(key, 1);
             self.updateDatabase();
             $q.resolve("Success");

@@ -821,6 +821,7 @@ class OsFilesResource extends OsRestfulEntityCacheableBase {
     list (, $filename) = explode('/', $filename);
     $dir = 'public://';
     if (isset($this->request['private']) || $_GET['private'] == 'only') {
+      $private = true;
       $dir = 'private://';
     }
 
@@ -833,7 +834,10 @@ class OsFilesResource extends OsRestfulEntityCacheableBase {
         ->fetchField();
 
       if ($vsite) {
-        $dir .= $vsite . '/files/';
+        $dir .= $vsite .'/';
+        if (!$private) {
+          $dir .= 'files/';
+        }
       }
     }
 
