@@ -106,9 +106,11 @@
      * @type {string}
      */
     var db = edb.files;
-    $scope.db = db.allFiles;
-    if (params.private) {
-      $scope.db = db.privateFiles;
+    if (db) {
+      $scope.db = db.allFiles;
+      if (params.private) {
+        $scope.db = db.privateFiles;
+      }
     }
 
     /**

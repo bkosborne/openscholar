@@ -89,11 +89,11 @@
             var args = {}
             for (var i = 0; i < rows.length; i++) {
               var entityType = rows[i].entityType;
-
               if (Object.keys(rows[i].params).length == emptyParamCount) {
-                var configs = args[entityType].configs || [];
                 args[entityType] = ['noop', entityType, rows[i].data, rows[i].lastUpdated];
-                args[entityType].configs = configs;
+                if (args[entityType]) {
+                  args[entityType].configs = args[entityType].configs || [];
+                }
               }
               else {
                 if (args[entityType] == undefined) {

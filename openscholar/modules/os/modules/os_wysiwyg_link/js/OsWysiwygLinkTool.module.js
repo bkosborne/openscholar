@@ -34,7 +34,7 @@
               type: type,
               arg: urlArgument,
               title: titleText,
-              newWindow: newWindow,
+              newWindow: newWindow
             }
           }
         })
@@ -57,6 +57,8 @@
     for (var k in Drupal.settings.extensionMap) {
       extensions = extensions.concat(Drupal.settings.extensionMap[k]);
     }
+
+    $s.errors = [];
 
     $s.fh = FileHandlers.getInstance(
       extensions,
@@ -95,19 +97,59 @@
 
     $s.setLinkTarget = function (arg) {
       $s.arg = arg;
-    }
+    };
 
     $s.close = function (insert) {
-      ret = {
+
+      var valid = {
+        // Taken from https://stackoverflow.com/a/46181/847651.
+        'email': function validateEmail(email) {
+          var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+          return re.test(email);
+        },
+
+        'url': function ValidURL(str) {
+          // Taken from https://stackoverflow.com/a/5717133/847651.
+          var regex = /(http|https):\/\/(\w+:{0,1}\w*)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%!\-\/]))?/;
+          return regex.test(str);
+        }
+      };
+
+      var ret = {
         type: $s.active,
         arg: $s.arg,
         text: $s.text,
         title: $s.title,
         newWindow: $s.newWindow,
         insert: insert
+      };
+
+      // todo: check for a good practice on throwing the errors.
+      var valid_form = true;
+      $s.errors = [];
+      if (ret.text == "") {
+        $s.errors.push(Drupal.t('The text field is empty.'));
+        valid_form = false;
       }
 
-      close(ret);
+      if (ret.title == "") {
+        $s.errors.push(Drupal.t('The title field is empty.'));
+        valid_form = false;
+      }
+
+      if (ret.type == 'email' && !valid.email(ret.arg)) {
+        $s.errors.push(Drupal.t('The email field is invalid.'));
+        valid_form = false;
+      }
+
+      if (ret.type == 'url' && !valid.url(ret.arg)) {
+        $s.errors.push(Drupal.t('The URL address is invalid'));
+        valid_form = false;
+      }
+
+      if (valid_form) {
+        close(ret);
+      }
     }
   }]);
 

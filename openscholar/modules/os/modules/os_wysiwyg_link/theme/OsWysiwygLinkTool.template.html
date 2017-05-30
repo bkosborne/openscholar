@@ -1,5 +1,10 @@
 <div>
 	<div>
+  <div ng-show="errors.length">
+    <ul>
+      <li ng-repeat="error in errors">{{error}}</li>
+    </ul>
+  </div>
     <div class="form-item link-form-left">
         <label for="owl-field-text">Link Text</label>
         <input type="text" id="owl-field-text" ng-model="text" class="form-text">
