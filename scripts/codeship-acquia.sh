@@ -34,7 +34,7 @@ npm install -g bower
 echo $CI_BRANCH
 echo $CI_COMMIT_ID
 # Drush executable.
-[[ $DRUSH && ${DRUSH-x} ]] || DRUSH=drush
+[[ $DRUSH && ${DRUSH-x} ]] || DRUSH="drush --verbose --debug --force-complete "
 BUILD_ROOT='/home/rof/src/acquia.com/hwpi1'
 cd $BUILD_ROOT
 #List of files from docroot that should be preserved
