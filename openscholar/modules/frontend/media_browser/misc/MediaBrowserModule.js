@@ -203,6 +203,10 @@
         }
       });
 
+    if (params.private) {
+      $scope.fh.private = true;
+    }
+
     /**
      * Set up filters
      */
@@ -287,7 +291,7 @@
     }
 
     function getFileById(fid) {
-      var files = $scope.db.Entities(0);
+      var files = $scope.db.Entities();
       for (var i=0; i<files.length; i++) {
         if (files[i].id == fid) {
           return files[i];
@@ -393,7 +397,8 @@
         var elem = event.currentTarget,
           params = mbModal.defaultParams(),
           panes = elem.attributes['panes'].value,
-          types = elem.attributes['types'].value.split(',');
+          types = elem.attributes['types'].value.split(','),
+          privateFiles = !!elem.attributes['private'];
 
         if (attr['replace']) {
           var prop = attr['replace'];
@@ -419,6 +424,8 @@
             window.location.reload();
           }
         }
+
+        params['private'] = privateFiles;
 
         mbModal.open(params);
       });
@@ -469,7 +476,8 @@
             document: 'document',
             html: 'html'
           },
-          replace: false
+          replace: false,
+          'private': false,
         };
 
         return params;
@@ -488,7 +496,8 @@
             types: params.types || defaults.types,
             max_filesize: params.max_filesize || null,
             max_filesize_raw: params.max_filesize_raw || null,
-            replace: params.replace || defaults.replace
+            replace: params.replace || defaults.replace,
+            'private': params.private || defaults.private
         };
 
         if (params.files) {

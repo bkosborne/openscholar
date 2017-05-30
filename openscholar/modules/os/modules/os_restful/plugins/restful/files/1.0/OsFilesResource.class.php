@@ -820,7 +820,7 @@ class OsFilesResource extends OsRestfulEntityCacheableBase {
   protected function checkFilename($filename) {
     list (, $filename) = explode('/', $filename);
     $dir = 'public://';
-    if (isset($this->request['private'])) {
+    if (isset($this->request['private']) || $_GET['private'] == 'only') {
       $dir = 'private://';
     }
 

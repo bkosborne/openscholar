@@ -111,6 +111,7 @@
 
       return {
         dupes: [],
+        'private': false,
         checkForDupes: function ($files, $event, $rejected) {
           var toBeUploaded = [];
           var toInsert = [];
@@ -125,11 +126,17 @@
 
             var url = Drupal.settings.paths.api + '/files/filename/' + $files[i].sanitized;
 
+            var urlParams = {};
             if (Drupal.settings.spaces) {
-              url += '?vsite=' + Drupal.settings.spaces.id;
+              urlParams['vsite'] = Drupal.settings.spaces.id;
             }
+            if (this['private']) {
+              urlParams['private'] = 'only';
+            }
+
             var config = {
-              originalFile: $files[i]
+              originalFile: $files[i],
+              params: urlParams,
             };
             var self = this;
             promises.push($http.get(url, config).then(function (response) {
