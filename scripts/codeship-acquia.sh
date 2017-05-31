@@ -103,7 +103,9 @@ cp -R openscholar/openscholar/modules/os_features/os_events/iCalcreator openscho
 for DIR in openscholar/openscholar/libraries openscholar/openscholar/themes/contrib openscholar/openscholar/modules/contrib
 do
 if [ -d "$DIR" ]; then
+git diff $DIR
 git add --verbose  --all -f $DIR
+git diff --cached $DIR
 fi
 done
 git commit -a -m "Make File Update."
@@ -208,7 +210,9 @@ cp -R openscholar/openscholar/modules/os_features/os_events/iCalcreator openscho
 )
 for DIR in openscholar/openscholar/libraries openscholar/openscholar/themes/contrib openscholar/openscholar/modules/contrib; do
 	if [ -d "$DIR" ]; then
+        git diff $DIR
 		git add --all -f $DIR
+        git diff --cached $DIR
 	fi
 done
 git commit --verbose  -a -m "Make File Update."
