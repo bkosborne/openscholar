@@ -104,16 +104,17 @@ cp -R openscholar/openscholar/modules/os_features/os_events/iCalcreator openscho
 for DIR in openscholar/openscholar/libraries openscholar/openscholar/themes/contrib openscholar/openscholar/modules/contrib
 do
 if [ -d "$DIR" ]; then
+git --no-pager diff
 git add --verbose  --all -f $DIR
-git diff --cached
+git --no-pager diff --cached
 fi
 done
-git commit -a -m "Make File Update."
+git commit --verbose -a -m "Make File Update."
 #END BUILD PROCESS
 else
 #Copy unmakable modules, when we don’t build
 cp -R openscholar/temporary/* openscholar/openscholar/modules/contrib/
-git commit -a -m "Update Temporary Modules." || echo 'Nothing to commit.'
+git commit --verbose -a -m "Update Temporary Modules." || echo 'Nothing to commit.'
 fi
 git push --verbose  origin $CI_BRANCH
 echo -e "\033[1;36mFINISHED BUILDING $CI_BRANCH ON HWPI1\e[0m"
@@ -210,8 +211,9 @@ cp -R openscholar/openscholar/modules/os_features/os_events/iCalcreator openscho
 )
 for DIR in openscholar/openscholar/libraries openscholar/openscholar/themes/contrib openscholar/openscholar/modules/contrib; do
 	if [ -d "$DIR" ]; then
+        git --no-pager diff
 		git add --all -f $DIR
-        git diff --cached
+        git --no-pager diff --cached
 	fi
 done
 git commit --verbose  -a -m "Make File Update."
@@ -219,7 +221,7 @@ git commit --verbose  -a -m "Make File Update."
 else
 #Copy unmakable modules, when we don’t build
 	cp -R openscholar/temporary/* openscholar/openscholar/modules/contrib/
-	git commit -a -m "Update Temporary Modules."  || echo 'Nothing to commit.'
+	git commit --verbose -a -m "Update Temporary Modules."  || echo 'Nothing to commit.'
 fi
 git push --verbose  origin $CI_BRANCH
 echo "FINISHED BUILDING $CI_BRANCH ON HWPI2"
