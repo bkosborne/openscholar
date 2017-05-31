@@ -53,7 +53,7 @@ for DIR in $BUILD_ROOT/www-build $BUILD_ROOT/www-backup openscholar/openscholar/
 done
 cd openscholar/openscholar
 
-$DRUSH make --no-core --contrib-destination drupal-org.make .
+$DRUSH make --no-cache --no-clean  --no-core --contrib-destination drupal-org.make .
 (
 	# Download composer components
 	composer install
@@ -69,7 +69,7 @@ $DRUSH make --no-core --contrib-destination drupal-org.make .
 )
 
 cd ../../
-$DRUSH make openscholar/openscholar/drupal-org-core.make $BUILD_ROOT/www-build
+$DRUSH make --no-cache --no-clean  openscholar/openscholar/drupal-org-core.make $BUILD_ROOT/www-build
 
 # Backup files from existing installation.
 cd $BUILD_ROOT
@@ -156,7 +156,7 @@ for DIR in $BUILD_ROOT/www-build $BUILD_ROOT/www-backup openscholar/openscholar/
 	rm -Rf $DIR
 done
 cd openscholar/openscholar
-$DRUSH make --no-core --contrib-destination drupal-org.make .
+$DRUSH make --no-cache --no-clean  --no-core --contrib-destination drupal-org.make .
 (
 	# Download composer components
 	composer install
@@ -172,7 +172,7 @@ $DRUSH make --no-core --contrib-destination drupal-org.make .
 )
 cd ../..
 # Build core.
-$DRUSH make openscholar/openscholar/drupal-org-core.make $BUILD_ROOT/www-build
+$DRUSH make --no-cache --no-clean  openscholar/openscholar/drupal-org-core.make $BUILD_ROOT/www-build
 # Backup files from existing installation.
 cd $BUILD_ROOT
 for BACKUP_FILE in "${preserve_files[@]}"; do
@@ -203,7 +203,7 @@ cp -R openscholar/openscholar/modules/os_features/os_events/iCalcreator openscho
 (
 	if [ -n "$OPSDIR" ] && [ -d $BUILD_ROOT/$DOCROOT/$OPSDIR ] ; then
 	cd $BUILD_ROOT/$DOCROOT/$OPSDIR
-	$DRUSH make --no-core --contrib-destination $BUILD_ROOT/openscholar/openscholar/os-ops.make .
+	$DRUSH make --no-cache --no-clean  --no-core --contrib-destination $BUILD_ROOT/openscholar/openscholar/os-ops.make .
 	fi
 )
 for DIR in openscholar/openscholar/libraries openscholar/openscholar/themes/contrib openscholar/openscholar/modules/contrib; do
