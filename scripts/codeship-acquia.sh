@@ -104,7 +104,6 @@ cp -R openscholar/openscholar/modules/os_features/os_events/iCalcreator openscho
 for DIR in openscholar/openscholar/libraries openscholar/openscholar/themes/contrib openscholar/openscholar/modules/contrib
 do
 if [ -d "$DIR" ]; then
-git diff
 git add --verbose  --all -f $DIR
 git diff --cached
 fi
@@ -211,7 +210,6 @@ cp -R openscholar/openscholar/modules/os_features/os_events/iCalcreator openscho
 )
 for DIR in openscholar/openscholar/libraries openscholar/openscholar/themes/contrib openscholar/openscholar/modules/contrib; do
 	if [ -d "$DIR" ]; then
-        git diff
 		git add --all -f $DIR
         git diff --cached
 	fi
