@@ -2,6 +2,7 @@
 
 set -x
 FORCE_REBUILD="1"
+env
 
 # Get PR branch, default to empty string
 PR_BRANCH=$(git show -s --format=%B $CI_COMMIT_ID | grep -oP 'Merge pull request #[\d]* from openscholar/\K(.*)' || echo "")
@@ -103,9 +104,9 @@ cp -R openscholar/openscholar/modules/os_features/os_events/iCalcreator openscho
 for DIR in openscholar/openscholar/libraries openscholar/openscholar/themes/contrib openscholar/openscholar/modules/contrib
 do
 if [ -d "$DIR" ]; then
-git diff $DIR
+git diff
 git add --verbose  --all -f $DIR
-git diff --cached $DIR
+git diff --cached
 fi
 done
 git commit -a -m "Make File Update."
@@ -210,9 +211,9 @@ cp -R openscholar/openscholar/modules/os_features/os_events/iCalcreator openscho
 )
 for DIR in openscholar/openscholar/libraries openscholar/openscholar/themes/contrib openscholar/openscholar/modules/contrib; do
 	if [ -d "$DIR" ]; then
-        git diff $DIR
+        git diff
 		git add --all -f $DIR
-        git diff --cached $DIR
+        git diff --cached
 	fi
 done
 git commit --verbose  -a -m "Make File Update."
