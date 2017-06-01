@@ -269,7 +269,7 @@
     // [a-zA-Z0-9.?#_-]+ matches against the filename without extension
     // ([a-zA-Z0-9]+) matches the extension itself
     // ($|[?#]) matches end of the string or a URL filename terminator (? or #)
-    var r = /^([a-z]+:\/\/[a-zA-Z0-9.\/_-:]+\/)?[a-zA-Z0-9.?#_ -]+\.([a-zA-Z0-9]+)($|[?#])/,
+    var r = /^([a-z]+:\/\/[a-zA-Z0-9.\/:_-]+\/)?[a-zA-Z0-9.?#_ -]+\.([a-zA-Z0-9]+)($|[?#])/,
       result = r.exec(url);
 
     if (result) {
