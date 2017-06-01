@@ -1,19 +1,19 @@
 diff --git a/redirect.module b/redirect.module
-index 5cdaa85..9ec94d9 100644
+index 9f7a256..1a5df6a 100644
 --- a/redirect.module
 +++ b/redirect.module
-@@ -563,6 +563,14 @@ function redirect_load_by_source($source, $language = LANGUAGE_NONE, array $quer
-   $fetch_alias ->condition('source', $source, '=');
-   $source_id = $fetch_alias->execute()->fetchField();
- 
-+  if ($source_id) {
-+    $source_id_split = explode('/', $source_id);
-+    unset ($source_id_split[0]);
-+    $source_id_to_match = implode('/', $source_id_split);
+@@ -557,6 +557,14 @@ function redirect_load_by_hash($hash, $reset = FALSE) {
+  * @ingroup redirect_api
+  */
+ function redirect_load_by_source($source, $language = LANGUAGE_NONE, array $query = array()) {
++
++  // Logic changes to activate redirect for existing path starts
++  if(drupal_valid_path($source)) {
++    $request = parse_url($_SERVER['REQUEST_URI']);
++    $source = ltrim($request["path"], '/');
 +  }
-+  if($source_id_to_match) {
-+    $source = $source_id_to_match;
-+  }
- 
-   // Logic changes to activate redirect for existing path ends
- 
++  // Logic changes to activate redirect for existing path ends
++
+   // Run a case-insensitive query for matching RIDs first.
+   $rid_query = db_select('redirect');
+   $rid_query->addField('redirect', 'rid');
