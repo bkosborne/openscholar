@@ -230,6 +230,12 @@ function admin_panel_url_outbound_alter(&$path, &$options, $original) {
   if (!in_array($path, $always_open_pages) || empty($options['query']['destination']) || ($path == 'user' && $user->uid)) {
     return;
   }
+  
+  // Don't add query params to destination if they are already there.
+  if (strpos($options['query']['destination'], 'admin_panel') !== FALSE) {
+    return;
+  }
+  
   $queryparam_add = (strpos($options['query']['destination'], '?') ? '&' : '?').drupal_http_build_query(array("admin_panel" => 1, 'login' => 1));
   $options['query']['destination'] = $options['query']['destination'] . $queryparam_add;
 }
