@@ -31,8 +31,7 @@ body:not(.overlay) .node-form {
     padding: 2px 0;
 }
 
-.ui-widget-content a,
-a {
+.ui-widget-content a {
     color: #215990;
 }
 
