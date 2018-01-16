@@ -51,7 +51,7 @@ function os_search_db_os_widget(){
       'module' => 'os_search_db',
       'delta' => 'site-search',
       'weight' => '-10',
-      'info' => 'Search Box'
+      'info' => 'Site Search',
   );
 
   return $items;
