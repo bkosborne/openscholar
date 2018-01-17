@@ -2657,7 +2657,7 @@ function os_events_mail_alter(&$message) {
   $mailing_address = variable_get('site_physical_address');
   if (!empty($mailing_address) {
     $message['body'][] = '';
-    $message['body'][] = 'Our mailing address is: ' . 
+    $message['body'][] = 'Our mailing address is: ' . $mailing_address;
   }
 }
 
