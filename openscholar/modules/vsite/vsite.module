@@ -2532,7 +2532,7 @@ function vsite_contact_mail_owner_submit($form, &$form_state) {
   $values['vsite'] = $space;
 
   if ($user->uid != 0) {
-    $values['headers']['Reply-To'] = $user->mail;
+    $userFrom = $user->mail;
     // Needed for the watchdog entry.
     $flood_name = $user->name;
   }
@@ -2543,16 +2543,18 @@ function vsite_contact_mail_owner_submit($form, &$form_state) {
     }
     // Needed for the watchdog entry.
     $flood_name = 'anonymous';
-    $values['headers']['Reply-To'] = $form_state['values']['from'];
+    
+    $userFrom = $form_state['values']['from'];
   }
-  $from = variable_get('site_mail', ini_get('sendmail_from'));
+  $values['headers']['Reply-To'] = $userFrom;
+  $siteFrom = variable_get('site_mail', ini_get('sendmail_from'));
 
   // Send the e-mail in the requested user language.
-  drupal_mail('vsite', 'user_mail', $to, user_preferred_language($account), $values, $from);
+  drupal_mail('vsite', 'user_mail', $to, user_preferred_language($account), $values, $siteFrom);
 
   // Send a copy if requested, using current page language.
   if ($form_state['values']['copy']) {
-    drupal_mail('vsite', 'user_copy', $from, $language, $values, $from);
+    drupal_mail('vsite', 'user_copy', $userFrom, $language, $values, $siteFrom);
   }
 
   flood_register_event('contact');
